@@ -1,40 +1,60 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useAuthStore } from "../../store/useAuthStore";
+import { apiService } from "../../utils/api";
 import AlbumList from "../../components/AlbumList";
 import Heading from "../../components/Heading";
 import Layout from "../../components/Layout";
 import { Album } from "../../types/types";
-import { customGet } from "../../utils/customGet";
-import { isAuthenticated } from "../../utils/isAuthenticated";
 
-interface IProps {
-  albums: Album[];
-}
+export default function Albums() {
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuthStore();
 
-export default function Albums({ albums }: IProps) {
+  useEffect(() => {
+    const fetchAlbums = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const response = await apiService.albums.getAll();
+        setAlbums(response.data);
+      } catch (error) {
+        console.error('Error fetching albums:', error);
+        setError('Failed to load albums');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlbums();
+  }, [isAuthenticated]);
+
+  if (loading) {
+    return (
+      <Layout title="Spotify Clone - Albums">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">Loading albums...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout title="Spotify Clone - Albums">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">{error}</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <Layout title="Spotify - Your Library">
+    <Layout title="Spotify Clone - Albums">
       <Heading text="Albums" />
       <AlbumList albums={albums} />
     </Layout>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
-  if (!(await isAuthenticated(session))) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  const { items } = await customGet(
-    `https://api.spotify.com/v1/me/albums?market=from_token&limit=50`,
-    session
-  );
-
-  return { props: { albums: items.map((item) => item.album) } };
-};

@@ -28,7 +28,7 @@ export default function SearchArtists({ query, searchArtists }: IProps) {
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getSession(ctx);
 
-  if (!(await isAuthenticated(session))) {
+  if (!(await isAuthenticated())) {
     return {
       redirect: {
         destination: "/login",

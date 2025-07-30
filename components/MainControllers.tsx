@@ -5,9 +5,9 @@ import {
   MdSkipNext,
   MdSkipPrevious,
 } from "react-icons/md";
-import { usePlayer } from "../context/PlayerContext";
 import styles from "../styles/ProgressBar.module.css";
 import { fmtMSS } from "../utils/formatDuration";
+import { usePlayerStore } from "../store/usePlayerStore";
 
 export default function MainControllers() {
   const {
@@ -18,7 +18,7 @@ export default function MainControllers() {
     duration,
     currentTime,
     slider,
-  } = usePlayer();
+  } = usePlayerStore();
 
   return (
     <div className="flex flex-col items-center justify-center col-span-7 gap-3">

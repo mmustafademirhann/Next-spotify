@@ -1,11 +1,13 @@
-import { MySession } from "../types/types";
+import { apiService } from './api';
 
-export const isAuthenticated = async (session: MySession | null) => {
-  if (
-    !session ||
-    Math.floor(Date.now()) >= (session.user as any).expires_at * 1000
-  ) {
+// Server-side authentication check for getServerSideProps
+export const isAuthenticated = async (): Promise<boolean> => {
+  try {
+    // Check if user is authenticated via backend API
+    const response = await apiService.auth.me();
+    return response.status === 200;
+  } catch (error) {
+    console.error('Authentication check failed:', error);
     return false;
   }
-  return true;
 };

@@ -1,11 +1,11 @@
 import { useRouter } from "next/router";
-import { useSpotify } from "../context/SpotifyContext";
+import { useSpotifyStore } from "../store/useSpotifyStore";
 import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 
 export default function SearchInput() {
   const router = useRouter();
 
-  const { query, setQuery } = useSpotify();
+  const { query, setQuery } = useSpotifyStore();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

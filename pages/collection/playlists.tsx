@@ -1,21 +1,36 @@
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 import Link from "next/link";
 import CardItem from "../../components/CardItem";
 import CardItemGrid from "../../components/CardItemGrid";
 import Heading from "../../components/Heading";
 import Layout from "../../components/Layout";
-import { useSpotify } from "../../context/SpotifyContext";
+import { useSpotifyStore } from "../../store/useSpotifyStore";
 import { PlaylistType } from "../../types/types";
 import { customGet } from "../../utils/customGet";
-import { isAuthenticated } from "../../utils/isAuthenticated";
 
 interface IProps {
   likedTracks: PlaylistType;
 }
 
+import { useAuthStore } from "../../store/useAuthStore";
+
 export default function UserPlaylists({ likedTracks }: IProps) {
-  const { playlists } = useSpotify();
+  const { playlists } = useSpotifyStore();
+  const { isAuthenticated } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return (
+      <Layout title="Spotify - Your Library">
+        <Heading text="Your Library" />
+        <div className="flex flex-col items-center justify-center h-64 text-white">
+          <p className="mb-4 text-lg">Kütüphaneni görmek için giriş yapmalısın.</p>
+          <Link href="/login">
+            <a className="px-6 py-2 text-white bg-primary rounded-full hover:bg-opacity-80">Giriş Yap</a>
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Spotify - Your Library">
@@ -47,7 +62,7 @@ export default function UserPlaylists({ likedTracks }: IProps) {
           <CardItem
             key={playlist.id}
             heading={playlist.name}
-            id={playlist.id}
+            id={String(playlist.id)}
             images={playlist.images}
             altTitle={playlist.name}
             subheading={playlist.description}
@@ -60,21 +75,52 @@ export default function UserPlaylists({ likedTracks }: IProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
+  // Check for JWT token in cookies
+  const token = ctx.req.cookies.token;
 
-  if (!isAuthenticated(session)) {
+  // If no token, just return empty likedTracks, let component handle login prompt
+  if (!token) {
     return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
+      props: {
+        likedTracks: {
+          id: 'liked',
+          name: 'Liked Songs',
+          description: 'Your liked songs',
+          images: [],
+          items: [],
+          total: 0
+        }
+      }
     };
   }
 
-  const likedTracks = await customGet(
-    `https://api.spotify.com/v1/me/tracks?market=from_token&limit=5`,
-    session
-  );
-
-  return { props: { likedTracks } };
+  // Fetch liked tracks from your backend API
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/playlists/liked`, {
+      headers: {
+        'Cookie': ctx.req.headers.cookie || '',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch liked tracks');
+    }
+    
+    const likedTracks = await response.json();
+    return { props: { likedTracks } };
+  } catch (error) {
+    console.error('Error fetching liked tracks:', error);
+    // Return empty playlist if API call fails
+    return { 
+      props: { 
+        likedTracks: {
+          id: 'liked',
+          name: 'Liked Songs',
+          description: 'Your liked songs',
+          images: [],
+          tracks: { total: 0 }
+        }
+      } 
+    };
+  }
 };

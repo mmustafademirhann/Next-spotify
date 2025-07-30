@@ -1,46 +1,63 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import Heading from "../../../components/Heading";
 import Layout from "../../../components/Layout";
 import TracksTable from "../../../components/TracksTable";
 import { Track } from "../../../types/types";
-import { customGet } from "../../../utils/customGet";
-import { isAuthenticated } from "../../../utils/isAuthenticated";
+import { apiService } from "../../../utils/api";
+import { useAuthStore } from "../../../store/useAuthStore";
 
-interface IProps {
-  query: string;
-  searchTracks: {
-    tracks: {
-      items: Track[];
+export default function SearchTracks() {
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
+  const { query } = router.query;
+  useEffect(() => {
+    const fetchTracks = async () => {
+      if (!isAuthenticated || !query) return;
+      
+      try {
+        const response = await apiService.search.query(query as string, 'track');
+        setTracks(response.data.tracks?.items || []);
+      } catch (error) {
+        console.error('Error fetching tracks:', error);
+        setError('Failed to load tracks');
+      } finally {
+        setLoading(false);
+      }
     };
-  };
-}
 
-export default function SearchTracks({ query, searchTracks }: IProps) {
+    fetchTracks();
+  }, [isAuthenticated, query]);
+
+  if (loading) {
+    return (
+      <Layout title="Spotify Clone - Search Tracks">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">Loading tracks...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout title="Spotify Clone - Search Tracks">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">{error}</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <Layout title="Spotify - Search">
-      <Heading text={`All songs for ${query}`} />
-      <TracksTable tracks={searchTracks?.tracks.items} />
+    <Layout title="Spotify Clone - Search Tracks">
+      <Heading text={`All songs for "${query}"`} />
+      <TracksTable tracks={tracks} />
     </Layout>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
 
-  if (!(await isAuthenticated(session))) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  const query = ctx.params?.query;
-  const searchTracks = await customGet(
-    `https://api.spotify.com/v1/search?q=${query}&market=from_token&type=track&limit=50`,
-    session
-  );
-  return { props: { query, searchTracks } };
-};

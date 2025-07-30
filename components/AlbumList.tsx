@@ -12,11 +12,11 @@ export default function AlbumList({ albums }: IProps) {
       {albums?.map((album) => (
         <CardItem
           key={album.id}
-          id={album.id}
-          heading={album.name}
-          images={album.images}
-          altTitle={album.name}
-          subheading={album.artists[0].name}
+          id={album.id.toString()}
+          heading={album.title || album.name || 'Unknown Album'}
+          images={album.images || []}
+          altTitle={album.title || album.name || 'Unknown Album'}
+          subheading={album.artistName || (album.artists && album.artists[0]?.name) || 'Unknown Artist'}
           type="album"
         />
       ))}

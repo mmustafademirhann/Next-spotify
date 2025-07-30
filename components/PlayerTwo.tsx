@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSpotify } from "../context/SpotifyContext";
+import { useSpotifyStore } from "../store/useSpotifyStore";
 import AdditionalControllers from "./AdditionalControllers";
 import PlayerTrackInfo from "./PlayerTrackInfo";
 
 export default function PlayerTwo() {
-  const { currentTrack } = useSpotify();
+  const currentTrack = useSpotifyStore((state) => state.currentTrack);
 
   const [audio, setAudio] = useState<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);

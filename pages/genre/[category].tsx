@@ -1,22 +1,20 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useSpotifyStore } from "../../store/useSpotifyStore";
 import Heading from "../../components/Heading";
 import Layout from "../../components/Layout";
 import PlaylistList from "../../components/PlaylistList";
-import { PlaylistType } from "../../types/types";
-import { customGet } from "../../utils/customGet";
-import { isAuthenticated } from "../../utils/isAuthenticated";
 
-interface IProps {
-  categoryName?: string;
-  playlists: {
-    items: PlaylistType[];
-  };
-}
-
-export default function CategoryPlaylists({ categoryName, playlists }: IProps) {
+export default function CategoryPlaylists() {
+  const router = useRouter();
+  const { category } = router.query;
+  const { isAuthenticated } = useAuthStore();
+  const { playlists, loading, error, fetchPlaylists } = useSpotifyStore();
+  
   const [capitalizedCategory, setCapitalizedCategory] = useState("");
+
+  const categoryName = Array.isArray(category) ? category[0] : category || "";
 
   useEffect(() => {
     if (categoryName) {
@@ -28,33 +26,40 @@ export default function CategoryPlaylists({ categoryName, playlists }: IProps) {
     }
   }, [categoryName]);
 
+  useEffect(() => {
+    if (categoryName && isAuthenticated) {
+      // This would typically fetch playlists by category from your backend
+      // For now, we'll fetch all playlists and filter by category if needed
+      fetchPlaylists();
+    }
+  }, [categoryName, isAuthenticated, fetchPlaylists]);
+
+  if (loading) {
+    return (
+      <Layout title={`Spotify - ${capitalizedCategory}`}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">Loading playlists...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout title={`Spotify - ${capitalizedCategory}`}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">{error}</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout title={`Spotify - ${capitalizedCategory}`}>
-      <Heading text={categoryName} className="capitalize" />
-      <PlaylistList playlists={playlists?.items} />
+      <Heading text={capitalizedCategory} className="capitalize" />
+      <PlaylistList playlists={playlists} />
     </Layout>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
 
-  if (!(await isAuthenticated(session))) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  const categoryId = ctx.params?.category;
-  const playlists = await customGet(
-    `https://api.spotify.com/v1/browse/categories/${categoryId}/playlists?country=IN&limit=50`,
-    session
-  );
-
-  const categoryName = categoryId.toString().split("_").join(" ");
-
-  return { props: { categoryName, playlists: playlists.playlists } };
-};

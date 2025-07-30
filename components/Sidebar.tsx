@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useSpotify } from "../context/SpotifyContext";
+import { useSpotifyStore } from "../store/useSpotifyStore";
 import { RiHome5Fill, RiHome5Line } from "react-icons/ri";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoSearchOutline, IoAlbums, IoMic, IoGrid } from "react-icons/io5";
 import { IoMdList } from "react-icons/io";
 
 const activeLink = "bg-[#282828] text-white";
@@ -13,7 +13,7 @@ const inactiveLink = "bg-transparent text-gray";
 export default function Sidebar() {
   const router = useRouter();
 
-  const { playlists, fetchPlaylists } = useSpotify();
+  const { playlists, fetchPlaylists } = useSpotifyStore();
 
   useEffect(() => {
     fetchPlaylists();
@@ -32,6 +32,7 @@ export default function Sidebar() {
           height={50}
           objectFit="contain"
           alt="Spotify logo"
+          priority
         />
 
         <ul className="w-full mt-4">
@@ -103,6 +104,47 @@ export default function Sidebar() {
             </a>
           </Link>
         </ul>
+
+        <div className="w-full h-px mt-4 bg-gray"></div>
+
+        {/* Browse Categories */}
+        <div className="w-full mt-4">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Keşfet</h3>
+          <ul className="space-y-1">
+            <Link href="/browse/categories">
+              <a>
+                <li className={`${
+                  router.pathname === "/browse/categories" ? activeLink : inactiveLink
+                } flex items-center gap-3 p-2 text-sm rounded cursor-pointer hover:text-white`}>
+                  <IoGrid className="text-xl" />
+                  <span className="font-medium">Kategoriler</span>
+                </li>
+              </a>
+            </Link>
+            
+            <Link href="/browse/albums">
+              <a>
+                <li className={`${
+                  router.pathname === "/browse/albums" ? activeLink : inactiveLink
+                } flex items-center gap-3 p-2 text-sm rounded cursor-pointer hover:text-white`}>
+                  <IoAlbums className="text-xl" />
+                  <span className="font-medium">Albümler</span>
+                </li>
+              </a>
+            </Link>
+            
+            <Link href="/browse/artists">
+              <a>
+                <li className={`${
+                  router.pathname === "/browse/artists" ? activeLink : inactiveLink
+                } flex items-center gap-3 p-2 text-sm rounded cursor-pointer hover:text-white`}>
+                  <IoMic className="text-xl" />
+                  <span className="font-medium">Sanatçılar</span>
+                </li>
+              </a>
+            </Link>
+          </ul>
+        </div>
 
         <div className="w-full h-px mt-4 bg-gray"></div>
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { MdSchedule } from "react-icons/md";
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayerStore } from "../store/usePlayerStore";
 import { Track } from "../types/types";
 import { fmtMSS } from "../utils/formatDuration";
 
@@ -15,7 +15,7 @@ export default function TracksTable({
   noAlbum = false,
   noArtist = false,
 }: IProps) {
-  const { setCurrentTrack } = usePlayer();
+  const setCurrentTrack = usePlayerStore((state) => state.setCurrentTrack);
 
   const playTrack = (track: Track) => {
     if (track.preview_url) {

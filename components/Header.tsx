@@ -1,24 +1,20 @@
-import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { AiOutlineUser } from "react-icons/ai";
 import { MdLogout, MdNavigateBefore, MdNavigateNext } from "react-icons/md";
-import { useSpotify } from "../context/SpotifyContext";
-import { MySession } from "../types/types";
+import { useAuthStore } from "../store/useAuthStore";
+import { useSpotifyStore } from "../store/useSpotifyStore";
 import CollectionTabs from "./CollectionTabs";
 import SearchInput from "./SearchInput";
 
-interface UseSession {
-  data: MySession | null;
-}
-
 export default function Header() {
   const router = useRouter();
-  const { data: session }: UseSession = useSession();
-  const { setCurrentTrack } = useSpotify();
+  const { user, logout: authLogout } = useAuthStore();
+  const { setCurrentTrack } = useSpotifyStore();
 
-  const logout = () => {
+  const handleLogout = () => {
     setCurrentTrack(null);
-    signOut({ callbackUrl: "http://localhost:3000/login" });
+    authLogout();
+    router.push("/login");
   };
 
   if (router.pathname === "/login") {
@@ -49,24 +45,16 @@ export default function Header() {
 
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3 py-2 pl-2 pr-4 bg-black rounded-full bg-opacity-70">
-          {session?.user?.picture === undefined ? (
-            <AiOutlineUser className="bg-[#333333] p-1 rounded-full text-2xl" />
-          ) : (
-            <img
-              src={session?.user?.picture}
-              className="object-contain w-8 h-8 rounded-full"
-              alt={session?.user?.name}
-            />
-          )}
+          <AiOutlineUser className="bg-[#333333] p-1 rounded-full text-2xl" />
           <span className="text-sm font-bold tracking-wide">
-            {session?.user?.name}
+            {user?.username || 'User'}
           </span>
         </div>
 
         <div>
           <button
             className="flex items-center justify-center bg-black bg-opacity-70 rounded-full h-10 w-10 hover:bg-[#181818] focus:outline-none cursor-pointer"
-            onClick={logout}
+            onClick={handleLogout}
           >
             <MdLogout />
           </button>

@@ -1,16 +1,17 @@
-import { DefaultSession } from "next-auth";
+// Updated types for custom backend integration
 
-interface MyUser {
-  name?: string | null;
-  email?: string | null;
-  picture?: string | null;
-  image?: string | null;
-  accessToken?: string | null;
+export interface User {
+  id?: string;
+  username: string;
+  email?: string;
+  role?: string;
+  createdAt?: string;
 }
 
-export interface MySession extends Omit<DefaultSession, "user"> {
-  user?: MyUser;
-  expires: string;
+export interface AuthResponse {
+  message: string;
+  username: string;
+  token?: string;
 }
 
 interface Image {
@@ -20,9 +21,12 @@ interface Image {
 }
 
 export interface Album {
-  id: string;
-  name: string;
-  artists: [Artist];
+  id: string | number;
+  name?: string; // Spotify format
+  title?: string; // Backend format
+  artists?: [Artist]; // Spotify format
+  artistId?: number; // Backend format
+  artistName?: string; // Backend format
   images?: [Image];
   album_type?: string;
   release_date?: string;
@@ -45,15 +49,17 @@ export interface Artist {
 export interface Track {
   id: string;
   name: string;
+  title?: string; // Backend compatibility
   album: Album;
   artists: [Artist];
+  artistName?: string; // Backend compatibility
   duration_ms: number;
   preview_url: string;
 }
 
 export interface PlaylistType {
   description?: string;
-  id: string;
+  id: string | number;
   followers?: {
     total?: number;
   };

@@ -1,7 +1,8 @@
+"use client";
+
 import { Artist } from "../types/types";
 import CardItem from "./CardItem";
 import CardItemGrid from "./CardItemGrid";
-
 interface IProps {
   artists: Artist[];
 }

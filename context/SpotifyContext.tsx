@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiService } from "../utils/api";
 import {
   createContext,
   Dispatch,
@@ -34,9 +34,9 @@ export const SpotifyProvider = ({ children }: any) => {
 
   const fetchPlaylists = async () => {
     try {
-      const resp = await axios.get("/api/playlists");
+      const resp = await apiService.playlists.getAll();
       const data = resp.data;
-      setPlaylists(data.items);
+      setPlaylists(data);
     } catch (err) {
       console.log(err);
     }
@@ -44,7 +44,7 @@ export const SpotifyProvider = ({ children }: any) => {
 
   const fetchSearchResults = async () => {
     try {
-      const resp = await axios.get(`/api/search?q=${query}`);
+      const resp = await apiService.search.query(query);
       setSearchResults(resp.data);
     } catch (err) {
       console.error(err);

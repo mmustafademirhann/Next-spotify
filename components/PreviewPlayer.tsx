@@ -1,10 +1,10 @@
-import { usePlayer } from "../context/PlayerContext";
+import { usePlayerStore } from "../store/usePlayerStore";
 import AdditionalControllers from "./AdditionalControllers";
 import MainControllers from "./MainControllers";
 import PlayerTrackInfo from "./PlayerTrackInfo";
 
 export default function PreviewPlayer() {
-  const { currentTrack } = usePlayer();
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
 
   if (!currentTrack) {
     return null;

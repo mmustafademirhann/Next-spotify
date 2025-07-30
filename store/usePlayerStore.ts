@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { Track } from '../types/types';
-
+import { Track } from '../types/types'; // Track tipini senin tanımladığın dosyadan alıyoruz
 
 interface PlayerStore {
   currentTrack: Track | null;
@@ -28,7 +27,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
   slider: 1,
   drag: 0,
 
-  setCurrentTrack: (track: Track) => {
+  setCurrentTrack: (track) => {
     const { currentTrackAudio, pause } = get();
     if (currentTrackAudio) {
       pause();
@@ -57,15 +56,14 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
       currentTrackAudio: audio,
     });
 
-    // otomatik çal
     setTimeout(async () => {
       await get().play();
     }, 100);
   },
 
-  setSlider: (val: number) => set({ slider: val }),
+  setSlider: (val) => set({ slider: val }),
 
-  setDrag: (val: number) => {
+  setDrag: (val) => {
     const audio = get().currentTrackAudio;
     if (audio) {
       audio.currentTime = Math.round((val * audio.duration) / 100);
@@ -94,8 +92,3 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
     isPlaying ? pause() : await play();
   },
 }));
-
-// PlayerContext.tsx dosyasındaki zustand store'u kaldırdım. Sadece store/usePlayerStore.ts kullanılacak.
-// Eğer context API ile başka bir şey yapmak isterseniz, burada yeni bir context tanımlayabilirsiniz.
-
-// Not: Player store için store/usePlayerStore.ts dosyasını kullanın.

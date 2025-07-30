@@ -1,173 +1,100 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { RiMusic2Fill } from "react-icons/ri";
-import AlbumList from "../../components/AlbumList";
-import ArtistList from "../../components/ArtistList";
 import Heading from "../../components/Heading";
 import Layout from "../../components/Layout";
-import TracksTable from "../../components/TracksTable";
-import { Album, Artist, Track } from "../../types/types";
-import { customGet } from "../../utils/customGet";
-import { isAuthenticated } from "../../utils/isAuthenticated";
+import { Artist } from "../../types/types";
+import { apiService } from "../../utils/api";
+import { useAuthStore } from "../../store/useAuthStore";
 
-interface Albums {
-  items: Album[];
-}
+export default function SingleArtist() {
+  const [artist, setArtist] = useState<Artist | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
+  const { artistId } = router.query;
+  useEffect(() => {
+    const fetchArtist = async () => {
+      if (!isAuthenticated || !artistId) return;
+      
+      try {
+        const response = await apiService.artists.getById(artistId as string);
+        setArtist(response.data);
+      } catch (error) {
+        console.error('Error fetching artist:', error);
+        setError('Failed to load artist');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-interface IProps {
-  artist: Artist;
-  artistTracks: Track[];
-  artistAlbums: Albums;
-  artistSingles: Albums;
-  artistAppearsOn: Albums;
-  artistCompilation: Albums;
-  relatedArtists: {
-    artists: [Artist];
-  };
-}
+    fetchArtist();
+  }, [isAuthenticated, artistId]);
 
-export default function SingleArtist({
-  artist,
-  artistTracks,
-  artistAlbums,
-  artistSingles,
-  artistAppearsOn,
-  artistCompilation,
-  relatedArtists,
-}: IProps) {
+  if (loading) {
+    return (
+      <Layout title="Spotify Clone - Loading Artist">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">Loading artist...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !artist) {
+    return (
+      <Layout title="Spotify Clone - Artist Not Found">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white">{error || 'Artist not found'}</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
-    <Layout title={`Spotify - ${artist?.name}`}>
+    <Layout title={`Spotify Clone - ${artist?.name}`}>
       <div className="flex items-end gap-6">
         {artist && (
           <>
-            {artist.images.length > 0 ? (
+            {artist.images && artist.images.length > 0 && artist.images[0]?.url ? (
               <img
                 src={artist.images[0].url}
                 alt={artist.name}
                 className="object-contain rounded-full w-52 h-52"
               />
             ) : (
-              <div className="w-full h-40">
-                <RiMusic2Fill className="w-full h-full bg-paper " />
+              <div className="w-52 h-52 flex items-center justify-center bg-gray-800 rounded-full">
+                <RiMusic2Fill className="w-16 h-16 text-gray-400" />
               </div>
             )}
             <div className="flex flex-col items-start gap-3">
               <h2 className="text-5xl font-bold">{artist.name}</h2>
-              <span className="text-sm">
-                {artist.followers.total.toLocaleString()} followers
-              </span>
-              <div className="flex items-center gap-5 text-sm">
-                {artist.genres.map((genre) => (
-                  <span key={genre}>{genre}</span>
-                ))}
-              </div>
+              {artist.followers?.total && (
+                <span className="text-sm">
+                  {artist.followers.total.toLocaleString()} followers
+                </span>
+              )}
+              {artist.genres && artist.genres.length > 0 && (
+                <div className="flex items-center gap-5 text-sm">
+                  {artist.genres.map((genre) => (
+                    <span key={genre}>{genre}</span>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
       </div>
 
       <div className="mt-8">
-        <Heading text="Popular" />
-        <div className="-mt-8">
-          <TracksTable tracks={artistTracks} noAlbum noArtist />
+        <div className="text-center text-gray-400">
+          <p>Artist details loaded from your backend!</p>
+          <p className="mt-2 text-sm">Additional features like tracks and albums can be added when your backend supports them.</p>
         </div>
       </div>
-
-      {artistAlbums?.items.length > 0 && (
-        <div className="mt-12">
-          <Heading text="Albums" />
-          <AlbumList albums={artistAlbums.items} />
-        </div>
-      )}
-
-      {artistSingles?.items.length > 0 && (
-        <div className="mt-12">
-          <Heading text="Singles" />
-          <AlbumList albums={artistSingles.items} />
-        </div>
-      )}
-
-      {artistAppearsOn?.items.length > 0 && (
-        <div className="mt-12">
-          <Heading text="Appears on" />
-          <AlbumList albums={artistAppearsOn.items} />
-        </div>
-      )}
-
-      {artistCompilation?.items.length > 0 && (
-        <div className="mt-12">
-          <Heading text="Compilation" />
-          <AlbumList albums={artistCompilation.items} />
-        </div>
-      )}
-
-      {relatedArtists?.artists.length > 0 && (
-        <div className="mt-12">
-          <Heading text="Fans also like" />
-          <ArtistList artists={relatedArtists.artists} />
-        </div>
-      )}
     </Layout>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
 
-  if (!(await isAuthenticated(session))) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  const artistId = ctx.params.artistId;
-  const artist = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}`,
-    session
-  );
-
-  const artistTracks = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=from_token`,
-    session
-  );
-
-  const artistAlbums = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album`,
-    session
-  );
-
-  const artistSingles = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=single`,
-    session
-  );
-
-  const artistAppearsOn = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=appears_on`,
-    session
-  );
-
-  const artistCompilation = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=compilation`,
-    session
-  );
-
-  const relatedArtists = await customGet(
-    `https://api.spotify.com/v1/artists/${artistId}/related-artists`,
-    session
-  );
-
-  return {
-    props: {
-      artist,
-      artistTracks: artistTracks.tracks,
-      artistAlbums,
-      artistSingles,
-      artistAppearsOn,
-      artistCompilation,
-      relatedArtists,
-    },
-  };
-};

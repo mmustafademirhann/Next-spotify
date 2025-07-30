@@ -12,11 +12,11 @@ export default function PlaylistList({ playlists }: IProps) {
       {playlists?.map((playlist) => (
         <CardItem
           key={playlist.id}
-          id={playlist.id}
-          heading={playlist.name}
-          subheading={playlist.description}
-          altTitle={playlist.name}
-          images={playlist.images}
+          id={playlist.id.toString()}
+          heading={playlist.name || 'Unknown Playlist'}
+          subheading={playlist.description || ''}
+          altTitle={playlist.name || 'Unknown Playlist'}
+          images={playlist.images || []}
           type="playlist"
         />
       ))}
