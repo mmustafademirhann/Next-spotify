@@ -23,7 +23,7 @@ export default function FollowedArtists({ followedArtists }: IProps) {
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getSession(ctx);
 
-  if (!(await isAuthenticated(session))) {
+  if (!(await isAuthenticated())) {
     return {
       redirect: {
         destination: "/login",

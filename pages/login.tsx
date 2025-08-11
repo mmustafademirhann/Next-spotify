@@ -13,7 +13,6 @@ export default function Login() {
   
   const { login, register, error: authError, loading: authLoading } = useAuthStore();
   const router = useRouter();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

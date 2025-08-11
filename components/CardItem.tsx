@@ -7,7 +7,7 @@ import { useAuthStore } from "../store/useAuthStore";
 
 interface IProps {
   images: any;
-  id: string;
+  id: bigint;
   altTitle: string;
   heading: string;
   subheading?: string;

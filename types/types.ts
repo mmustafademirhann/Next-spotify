@@ -1,7 +1,7 @@
 // Updated types for custom backend integration
 
 export interface User {
-  id?: string;
+  id?: bigint;
   username: string;
   email?: string;
   role?: string;
@@ -21,7 +21,7 @@ interface Image {
 }
 
 export interface Album {
-  id: string | number;
+  id: bigint | number;
   name?: string; // Spotify format
   title?: string; // Backend format
   artists?: [Artist]; // Spotify format
@@ -37,7 +37,7 @@ export interface Album {
 }
 
 export interface Artist {
-  id: string;
+  id: bigint;
   name: string;
   images?: [Image];
   followers?: {
@@ -47,7 +47,7 @@ export interface Artist {
 }
 
 export interface Track {
-  id: string;
+  id: bigint;
   name: string;
   title?: string; // Backend compatibility
   album: Album;
@@ -59,7 +59,7 @@ export interface Track {
 
 export interface PlaylistType {
   description?: string;
-  id: string | number;
+  id: bigint;
   followers?: {
     total?: number;
   };

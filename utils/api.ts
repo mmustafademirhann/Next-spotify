@@ -51,39 +51,39 @@ export const apiService = {
     getById: (id: string) => api.get(`/api/playlists/${id}`),
     create: (playlist: any) => api.post('/api/playlists', playlist),
     update: (playlist: any) => api.put('/api/playlists', playlist),
-    delete: (id: string) => api.delete(`/api/playlists/${id}`),
+    delete: (id: bigint) => api.delete(`/api/playlists/${id}`),
     getLibrary: () => api.get('/api/playlists/library'),
-    addToLibrary: (id: string) => api.post(`/api/playlists/${id}/library`),
-    removeFromLibrary: (id: string) => api.delete(`/api/playlists/${id}/library`),
-    isInLibrary: (id: string) => api.get(`/api/playlists/${id}/library`),
+    addToLibrary: (id: bigint) => api.post(`/api/playlists/${id}/library`),
+    removeFromLibrary: (id: bigint) => api.delete(`/api/playlists/${id}/library`),
+    isInLibrary: (id: bigint) => api.get(`/api/playlists/${id}/library`),
   },
 
   // Tracks
   tracks: {
     getAll: () => api.get('/api/tracks'),
-    getById: (id: string) => api.get(`/api/tracks/${id}`),
+    getById: (id: bigint) => api.get(`/api/tracks/${id}`),
     search: (query: string) => api.get(`/api/tracks/search?q=${encodeURIComponent(query)}`),
     getLiked: () => api.get('/api/tracks/liked'),
-    like: (id: string) => api.post(`/api/tracks/${id}/like`),
-    unlike: (id: string) => api.delete(`/api/tracks/${id}/like`),
-    isLiked: (id: string) => api.get(`/api/tracks/${id}/liked`),
+    like: (id: bigint) => api.post(`/api/tracks/${id}/like`),
+    unlike: (id: bigint) => api.delete(`/api/tracks/${id}/like`),
+    isLiked: (id: bigint) => api.get(`/api/tracks/${id}/liked`),
   },
 
   // Albums
   albums: {
     getAll: () => api.get('/api/albums'),
-    getById: (id: string) => api.get(`/api/albums/${id}`),
+    getById: (id: bigint) => api.get(`/api/albums/${id}`),
     search: (query: string) => api.get(`/api/albums/search?q=${encodeURIComponent(query)}`),
     getLibrary: () => api.get('/api/albums/library'),
-    addToLibrary: (id: string) => api.post(`/api/albums/${id}/library`),
-    removeFromLibrary: (id: string) => api.delete(`/api/albums/${id}/library`),
-    isInLibrary: (id: string) => api.get(`/api/albums/${id}/library`),
+    addToLibrary: (id: bigint) => api.post(`/api/albums/${id}/library`),
+    removeFromLibrary: (id: bigint) => api.delete(`/api/albums/${id}/library`),
+    isInLibrary: (id: bigint) => api.get(`/api/albums/${id}/library`),
   },
 
   // Artists
   artists: {
     getAll: () => api.get('/api/artists'),
-    getById: (id: string) => api.get(`/api/artists/${id}`),
+    getById: (id: bigint) => api.get(`/api/artists/${id}`),
     search: (query: string) => api.get(`/api/artists/search?q=${encodeURIComponent(query)}`),
   },
 

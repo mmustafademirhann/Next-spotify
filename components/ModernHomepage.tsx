@@ -1,12 +1,11 @@
 import React from 'react';
 import { IoPlay, IoHeart, IoAdd } from 'react-icons/io5';
-import { BsThreeDots } from 'react-icons/bs';
 import Link from 'next/link';
 import { useSpotifyStore } from '../store/useSpotifyStore';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface ContentItem {
-  id: string;
+  id: bigint;
   name: string;
   image: string;
   type: 'album' | 'artist' | 'playlist';
@@ -26,7 +25,7 @@ const ModernCard: React.FC<{ item: ContentItem }> = ({ item }) => {
             item.type === 'artist' ? 'rounded-full' : 'rounded-md'
           }`}
         />
-        
+        M
         {/* Play Button Overlay */}
         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
           <button className="bg-primary text-black rounded-full p-3 shadow-lg hover:scale-105 hover:bg-green-400 transition-all">
@@ -183,9 +182,9 @@ const ModernHomepage: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {playlists.slice(0, 6).map((playlist) => (
               <ModernCard 
-                key={playlist.id} 
+                key={playlist.id.toString()} 
                 item={{
-                  id: String(playlist.id),
+                  id: BigInt(playlist.id),
                   name: playlist.name,
                   image: playlist.images?.[0]?.url || '/default-playlist.jpg',
                   type: 'playlist',
